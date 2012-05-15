@@ -48,6 +48,12 @@ if(APPLE)
   list(APPEND CPACK_GENERATOR "PackageMaker")
 endif()
 set(CPACK_SOURCE_GENERATOR "ZIP;TBZ2;TGZ")
+
+# - Tools
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  find_package(LSB REQUIRED)
+endif()
+
 include(CPack)
 
 
