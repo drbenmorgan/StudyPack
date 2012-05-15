@@ -9,6 +9,7 @@ Topics to be looked at:
 * Checking required packages (STGZ and PackageMaker).
 * Download of components (e.g. large data files).
 * Use of BundleUtilities.
+* Update of hardcoded paths in installed files to new location.
 * Uninstallers.
 
 The StudyPack application is just a simple C++ "Hello World" for now.
