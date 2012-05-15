@@ -39,6 +39,15 @@ add_subdirectory(Source)
 #----------------------------------------------------------------------------
 # Packaging
 #
+# - Description and Licensing
+set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/License.txt)
+
+# - Only want a couple of the binary and source generators
+set(CPACK_GENERATOR "STGZ")
+if(APPLE)
+  list(APPEND CPACK_GENERATOR "PackageMaker")
+endif()
+set(CPACK_SOURCE_GENERATOR "ZIP;TBZ2;TGZ")
 include(CPack)
 
 
