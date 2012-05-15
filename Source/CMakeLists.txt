@@ -14,3 +14,5 @@
 
 add_executable(StudyPack StudyPack.cc)
 
+install(TARGETS StudyPack DESTINATION bin)
+
