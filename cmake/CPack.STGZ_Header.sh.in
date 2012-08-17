@@ -4,14 +4,14 @@
 cpack_preflight ()
 {
   # Sh function can't be empty, so always do something!
-  echo "Running preflight checks in ${toplevel}"
+  cpack_echo_info "Running preflight checks in ${toplevel}"
 }
 
 # Encapsulate tasks to run after unpacking
 cpack_postflight ()
 {
   # Sh function can't be empty, so always do something!  
-  echo "Running postflight checks in ${toplevel}"
+  cpack_echo_info "Running postflight checks in ${toplevel}"
 }
 
 # Display usage
@@ -20,7 +20,7 @@ cpack_usage()
   cat <<EOF
 Usage: $0 [options]
 Options: [defaults in brackets after descriptions]
-  --help            print this message
+  -h, --help        print this message
   --prefix=dir      directory in which to install
   --include-subdir  include the @CPACK_PACKAGE_FILE_NAME@ subdirectory
   --exclude-subdir  exclude the @CPACK_PACKAGE_FILE_NAME@ subdirectory
@@ -28,10 +28,24 @@ EOF
   exit 1
 }
 
+# Logging
+# - Exit with failure
 cpack_echo_exit()
 {
-  echo $1
+  cpack_echo_error "$1"
   exit 1
+}
+
+# - Info
+cpack_echo_info()
+{
+  echo "[@CPACK_PACKAGE_NAME@:info] $1"
+}
+
+# - Error
+cpack_echo_error()
+{
+  echo "[@CPACK_PACKAGE_NAME@:error] $1"
 }
 
 # Display version
@@ -46,6 +60,28 @@ cpack_fix_slashes ()
   echo "$1" | sed 's/\\/\//g'
 }
 
+# Helper functions for accessing the TGZ archive portion of this file
+# - Helper function to determine appropriate number argument for 'tail'
+# there are tails which don't understand the "-n" argument, e.g. on SunOS
+# OTOH there are tails which complain when not using the "-n" argument (e.g. GNU)
+# so at first try to tail some file to see if tail fails if used with "-n"
+# if so, don't use "-n"
+cpack_tail_syntax()
+{
+  try_tail_syntax="-n"
+  tail $use_new_tail_syntax +1 "$0" > /dev/null 2> /dev/null || try_tail_syntax=""
+  echo $try_tail_syntax
+}
+
+# - Helper function to stream the TGZ archive portion through gunzip
+# the NUMERIC parameter in this command should be one more
+# than the number of lines in this header file
+cpack_tar_stream()
+{
+  tail $(cpack_tail_syntax) +###CPACK_HEADER_LENGTH### "$0" | gunzip
+}
+
+#-----------------------------------------------------------------------
 # Startup...
 interactive=TRUE
 cpack_skip_license=FALSE
@@ -56,6 +92,9 @@ for a in "$@CPACK_AT_SIGN@"; do
     cpack_prefix_dir=`cpack_fix_slashes "${cpack_prefix_dir}"`
   fi
   if echo $a | grep "^--help" > /dev/null 2> /dev/null; then
+    cpack_usage 
+  fi
+  if echo $a | grep "^-h" > /dev/null 2> /dev/null; then
     cpack_usage 
   fi
   if echo $a | grep "^--version" > /dev/null 2> /dev/null; then
@@ -105,8 +144,7 @@ ____cpack__here_doc____
       y* | Y*)
         cpack_license_accepted=TRUE;;
       *)
-        echo "License not accepted. Exiting ..."
-        exit 1;;
+        cpack_echo_exit "License not accepted. Exiting ...";;
     esac
   fi
 
@@ -125,37 +163,27 @@ ____cpack__here_doc____
   fi
 fi
 
-# Preflight...
+# Run any preflight tasks
 cpack_preflight
 
 if [ "x${cpack_include_subdir}x" = "xTRUEx" ]
 then
   toplevel="${toplevel}/@CPACK_PACKAGE_FILE_NAME@"
-  mkdir -p "${toplevel}"
+  mkdir -p "${toplevel}" || cpack_echo_exit "Problem creating target directory ${toplevel}"
 fi
 echo
-echo "Using target directory: ${toplevel}"
+cpack_echo_info "Using target directory: ${toplevel}"
 
+cpack_echo_info "Extracting, please wait..."
 
-echo "Extracting, please wait..."
-echo ""
+cpack_tar_stream | (cd "${toplevel}" && tar xf -) || cpack_echo_exit "Problem unpacking the @CPACK_PACKAGE_FILE_NAME@"
 
-# take the archive portion of this file and pipe it to tar
-# the NUMERIC parameter in this command should be one more
-# than the number of lines in this header file
-# there are tails which don't understand the "-n" argument, e.g. on SunOS
-# OTOH there are tails which complain when not using the "-n" argument (e.g. GNU)
-# so at first try to tail some file to see if tail fails if used with "-n"
-# if so, don't use "-n"
-use_new_tail_syntax="-n"
-tail $use_new_tail_syntax +1 "$0" > /dev/null 2> /dev/null || use_new_tail_syntax=""
+cpack_echo_info "Unpacking finished successfully"
 
-tail $use_new_tail_syntax +###CPACK_HEADER_LENGTH### "$0" | gunzip | (cd "${toplevel}" && tar xf -) || cpack_echo_exit "Problem unpacking the @CPACK_PACKAGE_FILE_NAME@"
-
-echo "Unpacking finished successfully"
-
-# Postflight...
+# Run any postflight tasks
 cpack_postflight
+
+cpack_echo_info "@CPACK_PACKAGE_NAME@ installed successfully"
 
 exit 0
 #-----------------------------------------------------------
