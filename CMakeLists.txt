@@ -41,11 +41,15 @@ add_subdirectory(Source)
 set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/License.txt)
 
 # - Only want a couple of the binary and source generators
-set(CPACK_GENERATOR "STGZ")
+if(UNIX)
+  set(CPACK_GENERATOR "STGZ")
+endif()
+
 if(APPLE)
   list(APPEND CPACK_GENERATOR "PackageMaker")
 endif()
-set(CPACK_SOURCE_GENERATOR "ZIP;TBZ2;TGZ")
+
+set(CPACK_SOURCE_GENERATOR "ZIP;TBZ2")
 
 # - Tools
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -53,5 +57,4 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif()
 
 include(CPack)
-
 
