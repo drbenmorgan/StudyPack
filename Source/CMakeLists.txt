@@ -14,5 +14,5 @@
 
 add_executable(StudyPack StudyPack.cc)
 
-install(TARGETS StudyPack DESTINATION bin)
+install(TARGETS StudyPack DESTINATION ${CMAKE_INSTALL_BINDIR})
 

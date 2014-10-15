@@ -11,15 +11,8 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the License for more information.
 #-----------------------------------------------------------------------
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.6 FATAL_ERROR)
 project(StudyPack)
-
-#-----------------------------------------------------------------------
-# Prepend this project's custom module path(s) to CMAKE_MODULE_PATH
-#
-set(CMAKE_MODULE_PATH 
-  ${PROJECT_SOURCE_DIR}/cmake
-  ${CMAKE_MODULE_PATH})
 
 #-----------------------------------------------------------------------
 # Define the project version
@@ -29,10 +22,19 @@ set(StudyPack_VERSION_MINOR 1)
 set(StudyPack_VERSION_PATCH 0)
 
 #-----------------------------------------------------------------------
+# Prepend this project's custom module path(s) to CMAKE_MODULE_PATH
+#
+set(CMAKE_MODULE_PATH
+  ${PROJECT_SOURCE_DIR}/cmake
+  ${CMAKE_MODULE_PATH})
+
+# - Standard Install Paths for POSIX style
+include(GNUInstallDirs)
+
+#-----------------------------------------------------------------------
 # Build subdirectories
 #
 add_subdirectory(Source)
-
 
 #-----------------------------------------------------------------------
 # Packaging
